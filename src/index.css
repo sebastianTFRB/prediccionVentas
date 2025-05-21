@@ -191,5 +191,27 @@ button:active {
  text-align: center;
 }
 
+.grid-result {
+  display: grid;
+  gap: 2rem;
+  width: 100%;
+  max-width: 900px;
+  margin: 0 auto;
+  grid-template-columns: 1fr; /* Default: columna única */
+}
+
+@media (min-width: 768px) {
+  .grid-result {
+    grid-template-columns: 1fr 1fr; /* En pantallas grandes: 2 columnas */
+  }
+}
+
+.result-box {
+  background-color: #1a1a2e;
+  padding: 1rem;
+  border-radius: 12px;
+  box-shadow: 0 0 10px #00ffff80;
+  text-align: center;
+}
 
 

@@ -20,15 +20,17 @@ ChartJS.register(
   Legend
 );
 
-function ResultScreen({ prediction, date, onBack }) {
+function ResultScreen({ prediction, onBack }) {
+  const { predictedSales, logisticPrediction, probability } = prediction;
+
   const chartData = {
-    labels: [date],
+    labels: ['Predicción'],
     datasets: [
       {
-        label: 'Predicted Sales',
-        data: [prediction],
-        borderColor: '#2563eb',
-        backgroundColor: 'rgba(37, 99, 235, 0.1)',
+        label: 'Unidades estimadas',
+        data: [predictedSales],
+        borderColor: '#00ffff',
+        backgroundColor: 'rgba(0, 255, 255, 0.1)',
         fill: true,
         tension: 0.4,
       },
@@ -39,46 +41,36 @@ function ResultScreen({ prediction, date, onBack }) {
     responsive: true,
     plugins: {
       legend: { display: true },
-      title: {
-        display: true,
-        text: 'Predicción de Ventas',
-        font: { size: 18 },
-        color: '#1e293b',
-      },
+      title: { display: false },
     },
-    scales: {
-      y: {
-        beginAtZero: true,
-        ticks: {
-          stepSize: 1,
-        },
-      },
-    },
+    scales: { y: { beginAtZero: true } },
   };
 
   return (
     <div className="App">
-      <h1>Resultado de la Predicción</h1>
-      <div className="prediction-result">
-        <p>Predicted Sales: <strong>{prediction}</strong></p>
-        <button onClick={onBack}>Volver</button>
+      <h1>🎮 Panel de Resultados</h1>
+
+      <div className="grid-result">
+        {/* Modelo logístico */}
+        <div className="result-box">
+          <h2> IA Logística</h2>
+          <p>¿Se venderá?: <strong>{logisticPrediction === 1 ? 'SÍ' : 'NO'}</strong></p>
+          <p>Confianza: <strong>{(probability * 100).toFixed(2)}%</strong></p>
+        </div>
+
+        {/* Modelo de regresión */}
+        <div className="result-box">
+          <h2> Regresión SVR</h2>
+          <p>Unidades estimadas: <strong>{predictedSales}</strong></p>
+          <div className="chart-container">
+            <Line data={chartData} options={chartOptions} />
+          </div>
+        </div>
       </div>
-      <div style={styles.chartContainer}>
-        <Line data={chartData} options={chartOptions} />
-      </div>
+
+      <button onClick={onBack}>⬅ Volver</button>
     </div>
   );
 }
-
-const styles = {
-  chartContainer: {
-    maxWidth: '600px',
-    margin: '2rem auto',
-    padding: '1rem',
-    backgroundColor: '#ffffff',
-    borderRadius: '12px',
-    boxShadow: '0 2px 10px rgba(0,0,0,0.06)',
-  },
-};
 
 export default ResultScreen;

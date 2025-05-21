@@ -1,39 +1,25 @@
-// src/App.jsx
 import { useState } from 'react';
 import FormScreen from './FormScreen';
 import ResultScreen from './ResultScreen';
-import { fetchSalesPrediction } from './services/api';
+import { fetchCombinedPrediction } from './services/api';
 
 function App() {
   const [prediction, setPrediction] = useState(null);
-  const [inputData, setInputData] = useState(null);
 
   const handleSubmit = async ({ productId, shopId, categoryId, price, month }) => {
     try {
-      const predictionResult = await fetchSalesPrediction({
-        productId,
-        shopId,
-        categoryId,
-        price,
-        month,
-      });
-      setPrediction(predictionResult);
-      setInputData({ month });
+      const result = await fetchCombinedPrediction({ productId, shopId, categoryId, price, month });
+      setPrediction(result);
     } catch (err) {
       console.error('Error en la predicción:', err);
-      setPrediction('Error al obtener predicción');
+      setPrediction('Error');
     }
   };
-  
-  
 
-  const handleBack = () => {
-    setPrediction(null);
-    setInputData(null);
-  };
+  const handleBack = () => setPrediction(null);
 
-  return prediction !== null && inputData ? (
-    <ResultScreen prediction={prediction} date={inputData.date} onBack={handleBack} />
+  return prediction ? (
+    <ResultScreen prediction={prediction} onBack={handleBack} />
   ) : (
     <FormScreen onSubmit={handleSubmit} />
   );
