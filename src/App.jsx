@@ -1,121 +1,41 @@
+// src/App.jsx
 import { useState } from 'react';
-import {
-  Chart as ChartJS,
-  CategoryScale,
-  LinearScale,
-  PointElement,
-  LineElement,
-  Title,
-  Tooltip,
-  Legend
-} from 'chart.js';
-import { Line } from 'react-chartjs-2';
-
-ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend);
+import FormScreen from './FormScreen';
+import ResultScreen from './ResultScreen';
+import { fetchSalesPrediction } from './services/api';
 
 function App() {
-  const [productId, setProductId] = useState('');
-  const [shopId, setShopId] = useState('');
-  const [date, setDate] = useState('');
   const [prediction, setPrediction] = useState(null);
-  const [error, setError] = useState('');
-  const [chartData, setChartData] = useState(null);
+  const [inputData, setInputData] = useState(null);
 
-  const handlePredict = async () => {
-    if (!productId || !shopId || !date) {
-      setError('Por favor, complete todos los campos.');
-      setPrediction(null);
-      setChartData(null);
-      return;
-    }
-
-    setError('');
-    setChartData(null);
-
+  const handleSubmit = async ({ productId, shopId, categoryId, price, month }) => {
     try {
-      const response = await fetch('/forecast_sales', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ product_id: productId, shop_id: shopId, date }),
+      const predictionResult = await fetchSalesPrediction({
+        productId,
+        shopId,
+        categoryId,
+        price,
+        month,
       });
-
-      const data = await response.json();
-      setPrediction(data.prediction);
-
-      setChartData({
-        labels: [date],
-        datasets: [
-          {
-            label: 'Predicted Sales',
-            data: [data.prediction],
-            borderColor: 'rgba(75,192,192,1)',
-            backgroundColor: 'rgba(75,192,192,0.2)',
-            fill: true,
-          },
-        ],
-      });
-    } catch (error) {
-      console.error("Error fetching prediction:", error);
-      setPrediction("Error fetching prediction");
-      setChartData(null);
+      setPrediction(predictionResult);
+      setInputData({ month });
+    } catch (err) {
+      console.error('Error en la predicción:', err);
+      setPrediction('Error al obtener predicción');
     }
   };
+  
+  
 
-  const handleShowForm = () => {
+  const handleBack = () => {
     setPrediction(null);
-    setChartData(null);
-    setError('');
+    setInputData(null);
   };
 
-  return (
-    <div className="App">
-      <h1>Predicción de Ventas de Productos Electrónicos</h1>
-      {error && <p className="error-message">{error}</p>}
-
-      <div className="form-container">
-        <div className="input-fields-container">
-          <div className="form-group">
-            <label htmlFor="productId">ID del Producto:</label>
-            <input
-              type="text"
-              id="productId"
-              value={productId}
-              onChange={(e) => setProductId(e.target.value)}
-              placeholder="Ingresa ID del Producto"
-            />
-          </div>
-          <div className="form-group">
-            <label htmlFor="shopId">ID de la Tienda:</label>
-            <input
-              type="text"
-              id="shopId"
-              value={shopId}
-              onChange={(e) => setShopId(e.target.value)}
-              placeholder="Ingresa ID de la Tienda"
-            />
-          </div>
-          <div className="form-group">
-            <label htmlFor="date">Fecha:</label>
-            <input
-              type="date"
-              id="date"
-              value={date}
-              onChange={(e) => setDate(e.target.value)}
-            />
-          </div>
-          <button type="button" onClick={handlePredict}>
-            Obtener Predicción
-          </button>
-        </div>
-      </div>
-
-      {prediction !== null && <h2>Predicted Sales: {prediction}</h2>}
-      {chartData && (
-        <div className="chart-container">
-          <Line data={chartData} />
-        </div>
-      )}
-    </div>
+  return prediction !== null && inputData ? (
+    <ResultScreen prediction={prediction} date={inputData.date} onBack={handleBack} />
+  ) : (
+    <FormScreen onSubmit={handleSubmit} />
   );
 }
 
