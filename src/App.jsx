@@ -6,9 +6,9 @@ import { fetchCombinedPrediction } from './services/api';
 function App() {
   const [prediction, setPrediction] = useState(null);
 
-  const handleSubmit = async ({ productId, shopId, categoryId, price, month }) => {
+  const handleSubmit = async (features) => {
     try {
-      const result = await fetchCombinedPrediction({ productId, shopId, categoryId, price, month });
+      const result = await fetchCombinedPrediction(features);
       setPrediction(result);
     } catch (err) {
       console.error('Error en la predicción:', err);

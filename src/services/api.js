@@ -1,37 +1,28 @@
 const API = import.meta.env.VITE_API_URL;
 
-export const fetchCombinedPrediction = async ({ productId, shopId, categoryId, price, month }) => {
-  const payload = {
-    item_id: parseInt(productId),
-    shop_id: parseInt(shopId),
-    item_category_id: parseInt(categoryId),
-    item_price: parseFloat(price),
-    month: parseInt(month),
-  };
-
-  const [forecastRes, logisticRes] = await Promise.all([
-    fetch(`${API}/forecast_sales`, {
+export const fetchCombinedPrediction = async (features) => {
+  const [linearRes, svmRes] = await Promise.all([
+    fetch(`${API}/forecast_sales/linear`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload),
+      body: JSON.stringify(features),
     }),
-    fetch(`${API}/predict_sale_logistic`, {
+    fetch(`${API}/forecast_sales/svm`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload),
+      body: JSON.stringify(features),
     }),
   ]);
 
-  if (!forecastRes.ok || !logisticRes.ok) {
+  if (!linearRes.ok || !svmRes.ok) {
     throw new Error('Error en una o ambas predicciones');
   }
 
-  const forecastData = await forecastRes.json();
-  const logisticData = await logisticRes.json();
+  const linearData = await linearRes.json();
+  const svmData = await svmRes.json();
 
   return {
-    predictedSales: forecastData.predicted_sales,
-    logisticPrediction: logisticData.prediction,
-    probability: logisticData.probability,
+    linearPrediction: linearData.predicted_sales,
+    svmPrediction: svmData.predicted_sales
   };
 };
